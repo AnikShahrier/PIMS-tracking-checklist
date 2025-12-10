@@ -1,22 +1,10 @@
-import React, { useEffect, useState } from "react";
+/*  PURE JAVASCRIPT – NO TYPES  */
 
-// Simplified version — filtering removed, bugs fixed, cleaner state management.
-
-// Types
- type Status = "Not Started" | "In Progress" | "Done";
-
-type Task = {
-  id: string;
-  day: string;
-  title: string;
-  status: Status;
-  notes?: string;
-  date?: string;
-};
+const { useEffect, useState } = React;
 
 const STORAGE_KEY = "pims_onboarding_tasks_v2";
 
-const initialTasks: Task[] = [
+const initialTasks = [
   // Day 1
   { id: "t-1", day: "Day 1 — Core Understanding", title: "Run Angular project successfully", status: "Not Started" },
   { id: "t-2", day: "Day 1 — Core Understanding", title: "Review app-routing.module.ts", status: "Not Started" },
@@ -59,16 +47,16 @@ const initialTasks: Task[] = [
   { id: "t-27", day: "Day 7 — First Contribution", title: "Submit your first PR", status: "Not Started" }
 ];
 
-function uid(prefix="t"){
-  return `${prefix}-${Math.random().toString(36).slice(2,9)}`;
+function uid(prefix = "t") {
+  return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-export default function PIMSChecklistApp(){
-  const [tasks, setTasks] = useState<Task[]>(() => {
+function PIMSChecklistApp() {
+  const [tasks, setTasks] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if(saved) return JSON.parse(saved);
-    } catch(err){ console.error(err); }
+      if (saved) return JSON.parse(saved);
+    } catch (e) { console.error(e); }
     return initialTasks;
   });
 
@@ -81,26 +69,26 @@ export default function PIMSChecklistApp(){
 
   const days = Array.from(new Set(tasks.map(t => t.day)));
 
-  const setStatus = (id: string, status: Status) => {
+  const setStatus = (id, status) => {
     setTasks(prev => prev.map(t => t.id === id ? {
       ...t,
       status,
-      date: status === "Done" ? (t.date || new Date().toISOString().slice(0,10)) : undefined
+      date: status === "Done" ? (t.date || new Date().toISOString().slice(0, 10)) : undefined
     } : t));
   };
 
-  const updateNotes = (id: string, notes: string) => {
+  const updateNotes = (id, notes) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, notes } : t));
   };
 
-  const updateDate = (id: string, date?: string) => {
+  const updateDate = (id, date) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, date } : t));
   };
 
-  const removeTask = (id: string) => setTasks(prev => prev.filter(t => t.id !== id));
+  const removeTask = id => setTasks(prev => prev.filter(t => t.id !== id));
 
   const addTask = () => {
-    if(!newTitle.trim()) return;
+    if (!newTitle.trim()) return;
     setTasks(prev => [
       { id: uid(), day: newDay, title: newTitle.trim(), status: "Not Started" },
       ...prev
@@ -117,48 +105,71 @@ export default function PIMSChecklistApp(){
         <h1 className="text-2xl font-semibold">PIMS Checklist (Simplified)</h1>
         <p className="text-slate-500 text-sm mb-4">No filters. No clutter. Just your progress.</p>
 
-        {/* Add task */}
         <div className="flex gap-2 mb-4">
-          <input className="flex-1 border rounded px-2 py-1" placeholder="New task title" value={newTitle} onChange={e => setNewTitle(e.target.value)} />
-          <select className="border rounded px-2 py-1" value={newDay} onChange={e => setNewDay(e.target.value)}>
+          <input
+            className="flex-1 border rounded px-2 py-1"
+            placeholder="New task title"
+            value={newTitle}
+            onChange={e => setNewTitle(e.target.value)}
+          />
+          <select
+            className="border rounded px-2 py-1"
+            value={newDay}
+            onChange={e => setNewDay(e.target.value)}
+          >
             {days.map(d => <option key={d} value={d}>{d}</option>)}
           </select>
           <button onClick={addTask} className="px-3 py-1 bg-green-600 text-white rounded">Add</button>
         </div>
 
-        {/* Progress bar */}
         <div className="mb-4">
           <div className="bg-slate-200 h-3 rounded overflow-hidden">
-            <div className="bg-green-500 h-full" style={{width:`${percent}%`}} />
+            <div className="bg-green-500 h-full" style={{ width: `${percent}%` }} />
           </div>
           <p className="text-right text-sm text-slate-600 mt-1">{percent}% complete</p>
         </div>
 
-        {/* Task list */}
         <div className="space-y-3">
           {tasks.map(task => (
             <div key={task.id} className="p-3 border rounded flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-slate-50">
               <div className="flex-1">
                 <div className="font-medium">{task.title}</div>
                 <div className="text-xs text-slate-500">{task.day}</div>
-                <div className="mt-2 text-sm text-slate-700">{task.notes || <span className="text-slate-400">No notes</span>}</div>
+                <div className="mt-2 text-sm text-slate-700">
+                  {task.notes || <span className="text-slate-400">No notes</span>}
+                </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <select className="border rounded px-2 py-1" value={task.status} onChange={e => setStatus(task.id, e.target.value as Status)}>
+                <select
+                  className="border rounded px-2 py-1"
+                  value={task.status}
+                  onChange={e => setStatus(task.id, e.target.value)}
+                >
                   <option>Not Started</option>
                   <option>In Progress</option>
                   <option>Done</option>
                 </select>
 
-                <input type="date" className="border rounded px-2 py-1" value={task.date || ""} onChange={e => updateDate(task.id, e.target.value)} />
+                <input
+                  type="date"
+                  className="border rounded px-2 py-1"
+                  value={task.date || ""}
+                  onChange={e => updateDate(task.id, e.target.value)}
+                />
 
-                <button className="px-2 py-1 border rounded" onClick={() => {
-                  const note = prompt("Edit notes", task.notes || "");
-                  if(note !== null) updateNotes(task.id, note);
-                }}>Notes</button>
+                <button
+                  className="px-2 py-1 border rounded"
+                  onClick={() => {
+                    const note = prompt("Edit notes", task.notes || "");
+                    if (note !== null) updateNotes(task.id, note);
+                  }}
+                >Notes</button>
 
-                <button onClick={() => removeTask(task.id)} className="px-2 py-1 bg-red-600 text-white rounded">X</button>
+                <button
+                  onClick={() => removeTask(task.id)}
+                  className="px-2 py-1 bg-red-600 text-white rounded"
+                >X</button>
               </div>
             </div>
           ))}
@@ -167,8 +178,7 @@ export default function PIMSChecklistApp(){
     </div>
   );
 }
-// <-- paste your single JSX file here
-const App = () => {
-  return <h1>Hello from GitHub Pages!</h1>;
-};
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+/* ---------- mount the component ---------- */
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<PIMSChecklistApp />);
